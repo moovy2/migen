@@ -20,7 +20,9 @@ elif version_info[1] < 7:
 else:
     _call_opcodes["CALL_FUNCTION_EX"] = 2
     _call_opcodes["CALL_METHOD"] = 2
+    _call_opcodes["CALL_METHOD_KW"] = 2
     _call_opcodes["CALL"] = 2
+    _call_opcodes["CALL_KW"] = 2
 
 _load_build_opcodes = {
     "LOAD_GLOBAL" : _bytecode_length_version_guard(3),
@@ -59,9 +61,13 @@ def get_var_name(frame):
             return code.co_varnames[name_index]
         elif opc == "STORE_DEREF":
             name_index = int(code.co_code[index+1])
-            if version_info >= (3, 11):
-                name_index -= code.co_nlocals
-            return code.co_cellvars[name_index]
+            if name_index < code.co_nlocals:
+                return code.co_varnames[name_index]
+            name_index -= code.co_nlocals
+            if name_index < len(code.co_cellvars):
+                return code.co_cellvars[name_index]
+            name_index -= len(code.co_cellvars)
+            return code.co_freevars[name_index]
         elif opc in _load_build_opcodes:
             index += _load_build_opcodes[opc]
         else:
