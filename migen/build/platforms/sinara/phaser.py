@@ -273,9 +273,13 @@ _extensions = [
 
 class Platform(XilinxPlatform):
     userid = 0xffffffff
-    def __init__(self):
+    def __init__(self, speed_grade="-2"):
+        if speed_grade == "-2":
+            fpga = "xc7a100t-fgg484-2"
+        elif speed_grade == "-3":
+            fpga = "xc7a100t-fgg484-3"
         XilinxPlatform.__init__(
-                self, "xc7a100t-fgg484-2", _ios, _connectors,
+                self, fpga, _ios, _connectors,
                 toolchain="vivado")
         self.add_extension(_extensions)
         self.add_platform_command(
