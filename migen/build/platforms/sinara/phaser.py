@@ -13,8 +13,7 @@ _ios = [
     ("test_point", 1, Pins("P15"), IOStandard("LVCMOS25")),  # TP1
     ("test_point", 2, Pins("N13"), IOStandard("LVCMOS25")),  # TP2
     ("test_point", 3, Pins("P16"), IOStandard("LVCMOS25")),  # TP3
-    ("test_point", 4, Pins("N14"), IOStandard("LVCMOS25")),  # TP4
-    ("test_point", 5, Pins("R16"), IOStandard("LVCMOS25")),  # TP5
+    # See Platform Class for TP4, TP5
 
     ("clk_sel", 0, Pins("T20"), IOStandard("LVCMOS25")),  # SMA_CLK_SEL
 
@@ -273,11 +272,25 @@ _extensions = [
 
 class Platform(XilinxPlatform):
     userid = 0xffffffff
-    def __init__(self, speed_grade="-2"):
+    def __init__(self, speed_grade="-2", with_uart=False):
+        global _ios
         if speed_grade == "-2":
             fpga = "xc7a100t-fgg484-2"
         elif speed_grade == "-3":
             fpga = "xc7a100t-fgg484-3"
+        if with_uart:
+            _ios += [
+                ("serial", 0,
+                    Subsignal("rx", Pins("N14")),  # FPGA input, schematics TP4
+                    Subsignal("tx", Pins("R16")),  # FPGA output, schematics TP5
+                    IOStandard("LVCMOS25")
+                )
+            ]
+        else:
+            _ios += [
+                ("test_point", 4, Pins("N14"), IOStandard("LVCMOS25")),  # TP4
+                ("test_point", 5, Pins("R16"), IOStandard("LVCMOS25")),  # TP5
+            ]
         XilinxPlatform.__init__(
                 self, fpga, _ios, _connectors,
                 toolchain="vivado")
